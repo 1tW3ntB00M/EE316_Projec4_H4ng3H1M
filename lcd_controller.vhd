@@ -6,7 +6,7 @@ entity lcd_controller is
     Port ( 
         clk         : in STD_LOGIC; -- 125 MHz System Clock
         reset_n     : in std_logic;
-        d           : in std_logic_vector(6 downto 0); -- input character
+        d           : in std_logic_vector(7 downto 0); -- input character
         e_n         : in std_logic; -- enable signal, (next character) 
         
         -- ChipKit I2C
@@ -18,7 +18,6 @@ end lcd_controller;
 architecture Behavioral of lcd_controller is
 
     -- I2C Addresses
-    --constant ADDR_ADC : std_logic_vector(6 downto 0) := "1001000"; -- 0x48 PCF8591
     constant ADDR_LCD : std_logic_vector(6 downto 0) := "0100111"; -- 0x27 PCF8574
 
     -- Timing Constants (based on 125MHz clock)
@@ -27,9 +26,9 @@ architecture Behavioral of lcd_controller is
     
     --TODO: dont use?
     -- Inputs
-    signal btn_reset  : std_logic;
-    signal btn_raw    : std_logic_vector(3 downto 0);
-    signal btn_pulsed : std_logic_vector(3 downto 0);
+--    signal btn_reset  : std_logic;
+--    signal btn_raw    : std_logic_vector(3 downto 0);
+--    signal btn_pulsed : std_logic_vector(3 downto 0);
     
     -- I2C Master Signals
     signal i2c_ena     : std_logic := '0';
@@ -48,10 +47,10 @@ architecture Behavioral of lcd_controller is
     signal clk_gen_active : std_logic := '0';
     
     -- Data Registers
-    signal adc_ldr   : std_logic_vector(7 downto 0) := (others => '0'); -- AIN0
-    signal adc_temp  : std_logic_vector(7 downto 0) := (others => '0'); -- AIN1
-    signal adc_wave  : std_logic_vector(7 downto 0) := (others => '0'); -- AIN2 (Waveform)
-    signal adc_pot   : std_logic_vector(7 downto 0) := (others => '0'); -- AIN3 (Potentiometer)
+--    signal adc_ldr   : std_logic_vector(7 downto 0) := (others => '0'); -- AIN0
+--    signal adc_temp  : std_logic_vector(7 downto 0) := (others => '0'); -- AIN1
+--    signal adc_wave  : std_logic_vector(7 downto 0) := (others => '0'); -- AIN2 (Waveform)
+--    signal adc_pot   : std_logic_vector(7 downto 0) := (others => '0'); -- AIN3 (Potentiometer)
 
     -- FSM State Definitions
     type state is (
@@ -100,14 +99,13 @@ begin
     -- -------------------------------------------------------------------------
     -- Component Instantiations
     -- -------------------------------------------------------------------------
-    btn_reset <= not reset_n;
     
     -- 1. I2C Master
     i2c_inst : entity work.i2c_master
     generic map( input_clk => 125_000_000, bus_clk => 100_000 ) 
     port map(
         clk => clk,
-        reset_n => btn_reset,
+        reset_n => reset_n,
         ena => i2c_ena,
         addr => i2c_addr,
         rw => i2c_rw,
@@ -122,19 +120,32 @@ begin
     -- -------------------------------------------------------------------------
     -- LCD Buffer Generator
     -- -------------------------------------------------------------------------
-    --TODO: i dont thinkk this needs 'selected_src'
-    process(clk_gen_active)
+    process(clk, e_n)
     begin
-        --TODO: this is also hard coded and needs to be
-        --  replaced with
-        -- Line 1: Source
-        line1_buffer <= (others => get_char(' ')); -- Clear
-        line1_buffer(0) <= get_char('S');
-        line1_buffer(1) <= get_char('r');
-        line1_buffer(2) <= get_char('c');
-        line1_buffer(3) <= get_char(':');
+        --TODO: this buffer stores data front to back
+        --this may need to be changed to be back to front
+        if reset_n = '0' then
+            line1_buffer <= (others => get_char(' '));
+        elsif rising_edge(clk) and e_n = '0' then
+            line1_buffer(0) <= d;
+            line1_buffer(1) <= line1_buffer(0);
+            line1_buffer(2) <= line1_buffer(1);
+            line1_buffer(3) <= line1_buffer(2);
+            line1_buffer(4) <= line1_buffer(3);
+            line1_buffer(5) <= line1_buffer(4);
+            line1_buffer(6) <= line1_buffer(5);
+            line1_buffer(7) <= line1_buffer(6);
+            line1_buffer(8) <= line1_buffer(7);
+            line1_buffer(9) <= line1_buffer(8);
+            line1_buffer(10) <= line1_buffer(9);
+            line1_buffer(11) <= line1_buffer(10);
+            line1_buffer(12) <= line1_buffer(11);
+            line1_buffer(13) <= line1_buffer(12);
+            line1_buffer(14) <= line1_buffer(13);
+            line1_buffer(15) <= line1_buffer(14);
+        end if;
         
-        --TODO: this is hard coded, change this to set the buffer based
+        --TODO: Do we ever use the second line?
         --  on the input from the PC
         case selected_src is
             when 0 => -- LDR
@@ -158,6 +169,7 @@ begin
             when others => null;
         end case;
 
+        -- TODO: use this for win loss
         -- Line 2: Clock Status
         line2_buffer <= (others => get_char(' ')); -- Clear
         line2_buffer(0) <= get_char('C');
@@ -175,6 +187,8 @@ begin
         end if;
     end process;
                 
+    --TODO: everything below this should not require change any more
+                
     -- -------------------------------------------------------------------------
     -- MAIN I2C FSM
     -- -------------------------------------------------------------------------
@@ -183,7 +197,7 @@ begin
         variable lower_nib : std_logic_vector(3 downto 0);
     begin
         if rising_edge(clk) then
-            if btn_reset = '1' then
+            if reset_n = '0' then
                 state_LCD <= POWER_UP;
 --                state_ADC <= POWER_UP;
                 timer <= 0;
@@ -207,16 +221,20 @@ begin
                     -- ---------------------------------------------------------
                     when LCD_SOFT_RESET_1 =>
                         i2c_data_wr <= "0011" & LCD_BL & '1' & '0' & '0';
-                        i2c_addr <= ADDR_LCD; i2c_rw <= '0'; i2c_ena <= '1';
+                        i2c_addr <= ADDR_LCD;
+                        i2c_rw <= '0';
+                        i2c_ena <= '1';
                         state_LCD <= LCD_WAIT_RAW_1;
 
                     when LCD_WAIT_RAW_1 =>
                         if i2c_busy = '1' then i2c_ena <= '0';
                         elsif i2c_busy = '0' and i2c_ena = '0' then
                             if i2c_data_wr(2) = '1' then 
-                                i2c_data_wr(2) <= '0'; i2c_ena <= '1';
+                                i2c_data_wr(2) <= '0';
+                                i2c_ena <= '1';
                             else 
-                                timer <= 0; state_LCD <= LCD_DELAY_1; 
+                                timer <= 0;
+                                state_LCD <= LCD_DELAY_1; 
                             end if;
                         end if;
 
@@ -229,16 +247,20 @@ begin
 
                     when LCD_SOFT_RESET_2 =>
                         i2c_data_wr <= "0011" & LCD_BL & '1' & '0' & '0';
-                        i2c_addr <= ADDR_LCD; i2c_rw <= '0'; i2c_ena <= '1';
+                        i2c_addr <= ADDR_LCD;
+                        i2c_rw <= '0';
+                        i2c_ena <= '1';
                         state_LCD <= LCD_WAIT_RAW_2;
 
                     when LCD_WAIT_RAW_2 =>
                         if i2c_busy = '1' then i2c_ena <= '0';
                         elsif i2c_busy = '0' and i2c_ena = '0' then
                             if i2c_data_wr(2) = '1' then 
-                                i2c_data_wr(2) <= '0'; i2c_ena <= '1';
+                                i2c_data_wr(2) <= '0';
+                                i2c_ena <= '1';
                             else 
-                                timer <= 0; state_LCD <= LCD_DELAY_2; 
+                                timer <= 0;
+                                state_LCD <= LCD_DELAY_2; 
                             end if;
                         end if;
 
@@ -251,14 +273,17 @@ begin
 
                     when LCD_SOFT_RESET_3 =>
                         i2c_data_wr <= "0011" & LCD_BL & '1' & '0' & '0';
-                        i2c_addr <= ADDR_LCD; i2c_rw <= '0'; i2c_ena <= '1';
+                        i2c_addr <= ADDR_LCD;
+                        i2c_rw <= '0';
+                        i2c_ena <= '1';
                         state_LCD <= LCD_WAIT_RAW_3;
                         
                     when LCD_WAIT_RAW_3 =>
                         if i2c_busy = '1' then i2c_ena <= '0';
                         elsif i2c_busy = '0' and i2c_ena = '0' then
                             if i2c_data_wr(2) = '1' then 
-                                i2c_data_wr(2) <= '0'; i2c_ena <= '1';
+                                i2c_data_wr(2) <= '0';
+                                i2c_ena <= '1';
                             else 
                                 state_LCD <= LCD_SET_4BIT; 
                             end if;
@@ -266,30 +291,39 @@ begin
 
                     when LCD_SET_4BIT =>
                         i2c_data_wr <= "0010" & LCD_BL & '1' & '0' & '0';
-                        i2c_addr <= ADDR_LCD; i2c_rw <= '0'; i2c_ena <= '1';
+                        i2c_addr <= ADDR_LCD;
+                        i2c_rw <= '0';
+                        i2c_ena <= '1';
                         state_LCD <= LCD_WAIT_RAW_4;
 
                     when LCD_WAIT_RAW_4 =>
                          if i2c_busy = '1' then i2c_ena <= '0';
                         elsif i2c_busy = '0' and i2c_ena = '0' then
                             if i2c_data_wr(2) = '1' then 
-                                i2c_data_wr(2) <= '0'; i2c_ena <= '1';
+                                i2c_data_wr(2) <= '0';
+                                i2c_ena <= '1';
                             else 
                                 state_LCD <= LCD_INIT_2; 
                             end if;
                         end if;
 
                     when LCD_INIT_2 =>
-                        lcd_byte_to_send <= x"28"; lcd_rs_mode <= '0';
-                        return_state <= LCD_INIT_3; state_LCD <= LCD_SEND_NIBBLE_HI;
+                        lcd_byte_to_send <= x"28";
+                        lcd_rs_mode <= '0';
+                        return_state <= LCD_INIT_3;
+                        state_LCD <= LCD_SEND_NIBBLE_HI;
                         
                     when LCD_INIT_3 =>
-                        lcd_byte_to_send <= x"0C"; lcd_rs_mode <= '0';
-                        return_state <= LCD_INIT_4; state_LCD <= LCD_SEND_NIBBLE_HI;
+                        lcd_byte_to_send <= x"0C";
+                        lcd_rs_mode <= '0';
+                        return_state <= LCD_INIT_4;
+                        state_LCD <= LCD_SEND_NIBBLE_HI;
                         
                     when LCD_INIT_4 =>
-                        lcd_byte_to_send <= x"01"; lcd_rs_mode <= '0';
-                        return_state <= LCD_INIT_5; state_LCD <= LCD_SEND_NIBBLE_HI;
+                        lcd_byte_to_send <= x"01";
+                        lcd_rs_mode <= '0';
+                        return_state <= LCD_INIT_5;
+                        state_LCD <= LCD_SEND_NIBBLE_HI;
                         
                     when LCD_INIT_5 =>
                         if timer < TIME_2MS then
@@ -346,7 +380,8 @@ begin
                     when LCD_SEND_NIBBLE_HI =>
                         upper_nib := lcd_byte_to_send(7 downto 4);
                         i2c_data_wr <= upper_nib & LCD_BL & '1' & '0' & lcd_rs_mode;
-                        i2c_addr <= ADDR_LCD; i2c_rw <= '0';
+                        i2c_addr <= ADDR_LCD;
+                        i2c_rw <= '0';
                         i2c_ena <= '1';
                         state_LCD <= LCD_WAIT_HI_1;
                         
