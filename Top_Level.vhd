@@ -76,7 +76,22 @@ component Reset_Delay is
     end component;
 
 -------------------------------------------------------------------------------------------------
+        
+ component clock_div is
+  generic(
+    clock     : integer := 125;  --The internal board clock rate in MHz
+    Baud_rate : integer := 9600; --The baud rate you want to hit
+    Bytes     : integer := 16    --The number of byts you want to send
+  );
+  Port (
+    iClk        : in std_logic;
+    reset       : in std_logic;
+    oTX_Clk_Div : out std_logic;
+    oRX_Clk_Div : out std_logic
+  );
+end component;
 
+-------------------------------------------------------------------------------------------------
 
 component uart is
         Port (
@@ -112,10 +127,15 @@ component uart is
     signal Reset_Master      : std_logic;
     signal iReset            : std_logic;
     signal ascii_code        : std_logic_VECTOR(6 DOWNTO 0);
+    signal ascii_code8       : std_logic_VECTOR(7 DOWNTO 0);
+    signal rx_data           : std_logic_Vector(7 downto 0);
     signal ascii_new         : std_logic;
     signal ld_tx_data        : std_logic;
-    signal uld_rx_data        : std_logic;
-
+    signal uld_rx_data       : std_logic;
+    signal rx_enable         : std_logic;
+    signal rx_in             : std_logic;
+    signal TX_Clk            : std_logic;
+    signal RX_Clk            : std_logic;
 
 
 
@@ -127,6 +147,7 @@ begin
 Reset_Master <= Reset_o or iReset;
 led0_g       <= ascii_new;
 led1_g       <= Reset_Master;
+ascii_code8  <= '0' & ascii_code;
 
 
     -- ==========================================
@@ -175,27 +196,40 @@ inst_Reset_Delay : entity work.Reset_Delay
             oRESET  => Reset_o
         );
         
+
  -------------------------------------------------------------------------------------------------
 
---inst_uart : entity work.uart
---        port map (
---            reset           =>   Reset_Master,
---            txclk           =>   iClk,
---            ld_tx_data      =>   ld_tx_data,
---            tx_data         =>   ascii_code,
---            tx_enable       =>   ascii_new,
---            tx_out          =>   open,
---            tx_empty        =>   open,
---            rxclk           =>   iClk,
---            uld_rx_data     =>   uld_rx_data,
---            rx_data         =>   open,
---            rx_enable       =>   open,
---            rx_in           =>   open,
---            rx_empty        =>   open    
---        );
+inst_CLK_div_Uart : entity work.clock_div
+  generic map(
+    clock     => 125,  --The internal board clock rate in MHz
+    Baud_rate => 9600, --The baud rate you want to hit
+    Bytes     => 16    --The number of byts you want to send
+  )
+  Port map(
+    iClk        => iClk,
+    reset       => Reset_Master,
+    oTX_Clk_Div => TX_Clk,
+    oRX_Clk_Div => RX_Clk
+  );
 
+-------------------------------------------------------------------------------------------------
 
-
+inst_uart : entity work.uart
+        port map (
+            reset           =>   Reset_Master,
+            txclk           =>   TX_Clk,
+            ld_tx_data      =>   ld_tx_data,
+            tx_data         =>   ascii_code8,
+            tx_enable       =>   ascii_new,
+            tx_out          =>   UART_TX,    --The Pin to TX
+            tx_empty        =>   open,
+            rxclk           =>   RX_Clk,
+            uld_rx_data     =>   uld_rx_data,
+            rx_data         =>   rx_data,
+            rx_enable       =>   rx_enable,
+            rx_in           =>   rx_in,
+            rx_empty        =>   open    
+        );
 
 
 end Structural;
