@@ -48,8 +48,8 @@ end clock_div;
 
 architecture Behavioral of clock_div is
 
-    signal clk_num_TX  : integer :=0;
-    signal clk_num_RX  : integer :=0;
+    signal clk_num_TX  : integer := ((clock*(10 ** 6))/Baud_rate)/2;
+    signal clk_num_RX  : integer := ((clock*(10 ** 6))/(Baud_rate*Bytes))/2;
     signal clk_cnt_TX  : integer :=0;
     signal clk_cnt_RX  : integer :=0;
 	signal clk_en_TX   : std_logic;
@@ -59,16 +59,17 @@ architecture Behavioral of clock_div is
 
 begin
 
-MATHULATION: process(iClk)
-	 begin
-	   if reset = '1' then
-	       clk_num_TX <= 0;
-	       clk_num_RX <= 0;
-	   else
-           clk_num_TX <= (clock*(10 ** 6))/Baud_rate;
-           clk_num_RX <= (clock*(10 ** 6))/(Baud_rate*Bytes);
-       end if;
-end process;
+--MATHULATION: process(iClk)
+--	 begin
+--	   if reset = '1' then
+--	       clk_num_TX <= 0;
+--	       clk_num_RX <= 0;
+--	   else
+--           clk_num_TX <= (clock*(10 ** 6))/Baud_rate;
+--           clk_num_RX <= (clock*(10 ** 6))/(Baud_rate*Bytes);
+           
+--       end if;
+--end process;
 
 Clock_Division_TX: process(iClk)
 	 begin
