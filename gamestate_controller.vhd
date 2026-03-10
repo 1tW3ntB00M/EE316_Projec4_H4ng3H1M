@@ -41,7 +41,8 @@ entity gamestate_controller is
     
     --TODO: what size is this
     d           : in std_logic_vector(7 downto 0);
-    
+   
+    oGs         : out unsigned(3 downto 0); 
     q           : out std_logic_vector(127 downto 0);
     oEn         : out std_logic);
 end gamestate_controller;
@@ -287,6 +288,7 @@ begin
                     q(23 downto 16) <= newBuff(13);
                     q(15 downto 8) <= newBuff(14);
                     q(7 downto 0) <= newBuff(15);
+                    oGs <= X"6";
                     n <= 0;
                 when x"01" => --normal play
                     q(127 downto 120) <= regBuff(0);
@@ -305,6 +307,7 @@ begin
                     q(23 downto 16) <= regBuff(13);
                     q(15 downto 8) <= regBuff(14);
                     q(7 downto 0) <= regBuff(15);
+                    oGs <= x"5";
                 when x"02" => --TODO: ther must be a better way to do this?
                     q(127 downto 120) <= regBuff(0);
                     q(119 downto 112) <= regBuff(1);
@@ -322,6 +325,7 @@ begin
                     q(23 downto 16) <= regBuff(13);
                     q(15 downto 8) <= regBuff(14);
                     q(7 downto 0) <= regBuff(15);
+                    oGs <= x"4";
                 when x"03" =>
                     q(127 downto 120) <= regBuff(0);
                     q(119 downto 112) <= regBuff(1);
@@ -339,6 +343,7 @@ begin
                     q(23 downto 16) <= regBuff(13);
                     q(15 downto 8) <= regBuff(14);
                     q(7 downto 0) <= regBuff(15);
+                    oGs <= x"3";
                 when x"04" =>
                     q(127 downto 120) <= regBuff(0);
                     q(119 downto 112) <= regBuff(1);
@@ -356,6 +361,7 @@ begin
                     q(23 downto 16) <= regBuff(13);
                     q(15 downto 8) <= regBuff(14);
                     q(7 downto 0) <= regBuff(15);
+                    oGs <= x"2";
                 when x"05" =>
                     q(127 downto 120) <= regBuff(0);
                     q(119 downto 112) <= regBuff(1);
@@ -373,6 +379,7 @@ begin
                     q(23 downto 16) <= regBuff(13);
                     q(15 downto 8) <= regBuff(14);
                     q(7 downto 0) <= regBuff(15);
+                    oGs <= x"1";
                 when x"06" =>
                     q(127 downto 120) <= regBuff(0);
                     q(119 downto 112) <= regBuff(1);
@@ -390,6 +397,7 @@ begin
                     q(23 downto 16) <= regBuff(13);
                     q(15 downto 8) <= regBuff(14);
                     q(7 downto 0) <= regBuff(15);
+                    oGs <= x"0";
                 when x"07" => --win
                     --TODO: more than 16 characters, need to scroll
                     q(127 downto 120)   <= winBuff(n + 0);
@@ -458,6 +466,7 @@ begin
                     n <= 0;
                 when others =>
                     n <= 0;
+                    oGs <= x"f";
             end case;
         end if;
     end process;
