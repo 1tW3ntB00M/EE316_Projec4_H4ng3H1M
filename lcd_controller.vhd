@@ -6,7 +6,7 @@ entity lcd_controller is
     Port ( 
         clk         : in STD_LOGIC; -- 125 MHz System Clock
         reset_n     : in std_logic;
-        d           : in std_logic_vector(7 downto 0); -- input character
+        d           : in std_logic_vector(127 downto 0); -- input line
         e_n         : in std_logic; -- enable signal, (next character) 
         
         -- ChipKit I2C
@@ -122,27 +122,25 @@ begin
     -- -------------------------------------------------------------------------
     process(clk, e_n)
     begin
-        --TODO: this buffer stores data front to back
-        --this may need to be changed to be back to front
         if reset_n = '0' then
             line1_buffer <= (others => get_char(' '));
-        elsif rising_edge(clk) and e_n = '0' then
-            line1_buffer(0) <= d;
-            line1_buffer(1) <= line1_buffer(0);
-            line1_buffer(2) <= line1_buffer(1);
-            line1_buffer(3) <= line1_buffer(2);
-            line1_buffer(4) <= line1_buffer(3);
-            line1_buffer(5) <= line1_buffer(4);
-            line1_buffer(6) <= line1_buffer(5);
-            line1_buffer(7) <= line1_buffer(6);
-            line1_buffer(8) <= line1_buffer(7);
-            line1_buffer(9) <= line1_buffer(8);
-            line1_buffer(10) <= line1_buffer(9);
-            line1_buffer(11) <= line1_buffer(10);
-            line1_buffer(12) <= line1_buffer(11);
-            line1_buffer(13) <= line1_buffer(12);
-            line1_buffer(14) <= line1_buffer(13);
-            line1_buffer(15) <= line1_buffer(14);
+        elsif rising_edge(clk) then --and e_n = '0' then
+            line1_buffer(0)     <= d(127 downto 120);
+            line1_buffer(1)     <= d(119 downto 112);
+            line1_buffer(2)     <= d(111 downto 104);
+            line1_buffer(3)     <= d(103 downto 96);
+            line1_buffer(4)     <= d(95 downto 88);
+            line1_buffer(5)     <= d(87 downto 80);
+            line1_buffer(6)     <= d(79 downto 72);
+            line1_buffer(7)     <= d(71 downto 64);
+            line1_buffer(8)     <= d(63 downto 56);
+            line1_buffer(9)     <= d(55 downto 48);
+            line1_buffer(10)    <= d(47 downto 40);
+            line1_buffer(11)    <= d(39 downto 32);
+            line1_buffer(12)    <= d(31 downto 24);
+            line1_buffer(13)    <= d(23 downto 16);
+            line1_buffer(14)    <= d(15 downto 8);
+            line1_buffer(15)    <= d(7 downto 0);
         end if;
         
         --TODO: Do we ever use the second line?
