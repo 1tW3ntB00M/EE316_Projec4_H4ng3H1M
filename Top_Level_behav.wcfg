@@ -11,17 +11,18 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="4990620670393fs"></ZoomEndTime>
-      <Cursor1Time time="1000000000fs"></Cursor1Time>
+      <ZoomEndTime time="5004560951596fs"></ZoomEndTime>
+      <Cursor1Time time="223044499000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="175"></NameColumnWidth>
-      <ValueColumnWidth column_width="142"></ValueColumnWidth>
+      <ValueColumnWidth column_width="138"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="3" />
+   <WVObjectSize size="8" />
    <wvobject fp_name="group25" type="group">
       <obj_property name="label">Top Level</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/Top_Level/btn0" type="logic">
          <obj_property name="ElementShortName">btn0</obj_property>
          <obj_property name="ObjectShortName">btn0</obj_property>
@@ -286,5 +287,25 @@
          <obj_property name="ElementShortName">tx_is_empty</obj_property>
          <obj_property name="ObjectShortName">tx_is_empty</obj_property>
       </wvobject>
+   </wvobject>
+   <wvobject fp_name="/Top_Level/debounce_PS2_Clk/BTN_I" type="logic">
+      <obj_property name="ElementShortName">BTN_I</obj_property>
+      <obj_property name="ObjectShortName">BTN_I</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Top_Level/debounce_PS2_Clk/CLK" type="logic">
+      <obj_property name="ElementShortName">CLK</obj_property>
+      <obj_property name="ObjectShortName">CLK</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Top_Level/debounce_PS2_Clk/BTN_O" type="logic">
+      <obj_property name="ElementShortName">BTN_O</obj_property>
+      <obj_property name="ObjectShortName">BTN_O</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Top_Level/debounce_PS2_Clk/TOGGLE_O" type="logic">
+      <obj_property name="ElementShortName">TOGGLE_O</obj_property>
+      <obj_property name="ObjectShortName">TOGGLE_O</obj_property>
+   </wvobject>
+   <wvobject fp_name="/Top_Level/debounce_PS2_Clk/PULSE_O" type="logic">
+      <obj_property name="ElementShortName">PULSE_O</obj_property>
+      <obj_property name="ObjectShortName">PULSE_O</obj_property>
    </wvobject>
 </wave_config>

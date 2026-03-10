@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.numeric_std.all;
 
 entity Top_Level is
         port (
@@ -13,7 +14,7 @@ entity Top_Level is
         LCD_SCL             : inout std_logic;
         
         -- On board LEDS
-        led0_g              : out std_logic;
+        led0_g              : out std_logic := '0';
         led1_g              : out std_logic;
     
         UART_RX             : in std_logic;
@@ -55,6 +56,9 @@ component btn_debounce_toggle is
 -------------------------------------------------------------------------------------------------
 
 component ps2_keyboard_to_ascii is
+GENERIC(
+      clk_freq                  : INTEGER := 50_000_000; --system clock frequency in Hz
+      ps2_debounce_counter_size : INTEGER := 8);         --set such that 2^size/clk_freq = 5us (size = 8 for 50MHz)
         Port (
             clk        : IN  STD_LOGIC;                     --system clock input
             ps2_clk    : IN  STD_LOGIC;                     --clock signal from PS2 keyboard
@@ -136,18 +140,57 @@ component uart is
     signal rx_in             : std_logic;
     signal TX_Clk            : std_logic;
     signal RX_Clk            : std_logic;
-
-
-
-
-
-
+    signal ascii_new_pulse   : std_logic;
+    signal pulseCounter      : unsigned(7 downto 0) := X"00";
+    signal tenPulse     : std_logic := '0';
+    signal tempPulse    : std_logic := '0';
+    signal tx_empty     : std_logic;
+    signal Q0, Q1       : std_logic;
 begin
 
 Reset_Master <= Reset_o or iReset;
-led0_g       <= ascii_new;
+led0_g       <= tempPulse;
 led1_g       <= Reset_Master;
 ascii_code8  <= '0' & ascii_code;
+
+--process(tx_clk, ascii_new_pulse)
+--begin
+--    if rising_edge(ascii_new_pulse) then
+--            pulseCounter <= x"00";
+--    end if;
+
+--    if rising_edge(tx_clk) then
+--        if pulseCounter /= x"09" then
+--            pulseCounter <= pulseCounter + 1;
+--            tenPulse <= '1';
+--        else
+--            tenPulse <= '0';
+--        end if;
+--    end if;
+--end process;
+
+--process(tx_empty, ascii_new_pulse)
+--begin
+--    if rising_edge(ascii_new_pulse) then
+--        tempPulse <= '1';
+--    end if;
+    
+--    if falling_edge(tx_empty) then
+--        tempPulse <= '0';
+--    end if;
+--end process;
+
+process(iclk, ascii_new)
+begin
+        if rising_edge(ascii_new) and tx_empty = '1' then
+            tempPulse <= '1';
+        end if;
+        
+        if tx_empty = '0' then
+            tempPulse <= '0';
+        end if;
+end process;
+
 
 
     -- ==========================================
@@ -179,7 +222,34 @@ ascii_code8  <= '0' & ascii_code;
 
  -------------------------------------------------------------------------------------------------
 
+   
+--        debounce_PS2_Clk : entity work.btn_debounce_toggle
+--        generic map ( CNTR_MAX => X"0FFF" )
+--        port map (
+--            BTN_I    => ascii_new,
+--            CLK      => tx_clk,
+--            BTN_O    => open,
+--            TOGGLE_O => open,
+--            PULSE_O  => ascii_new_pulse
+--        );
+
+
+	btn_toggle_process : process(tx_clk)
+	begin
+		if (rising_edge(tx_clk)) then
+			Q0 <= ascii_new;
+			Q1 <= Q0;
+			ascii_new_pulse   <= not Q1 and Q0;
+		end if;
+	end process;
+
+
+ -------------------------------------------------------------------------------------------------
+
 inst_ps2_keyboard_to_ascii : entity work.ps2_keyboard_to_ascii
+GENERIC map(
+      clk_freq                  => 125_000_000, --system clock frequency in Hz
+      ps2_debounce_counter_size => 9)         --set such that 2^size/clk_freq = 5us (size = 8 for 50MHz)
         port map (
             clk          => iClk,
             ps2_clk      => PS2_Clk,
@@ -218,11 +288,11 @@ inst_uart : entity work.uart
         port map (
             reset           =>   Reset_Master,
             txclk           =>   TX_Clk,
-            ld_tx_data      =>   ld_tx_data,
+            ld_tx_data      =>   ascii_new_pulse, --- '1'
             tx_data         =>   ascii_code8,
-            tx_enable       =>   ascii_new,
+            tx_enable       =>   '1', ----ascii_new_pulse
             tx_out          =>   UART_TX,    --The Pin to TX
-            tx_empty        =>   open,
+            tx_empty        =>   tx_empty,
             rxclk           =>   RX_Clk,
             uld_rx_data     =>   uld_rx_data,
             rx_data         =>   rx_data,
