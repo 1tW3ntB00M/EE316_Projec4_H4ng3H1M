@@ -4,24 +4,24 @@
 ## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
 
 ## PL System Clock
-set_property -dict { PACKAGE_PIN H16   IOSTANDARD LVCMOS33 } [get_ports { iClk }]; #IO_L13P_T2_MRCC_35 Sch=sysclk
-create_clock -add -name sys_clk_pin -period 8.00 -waveform {0 4} [get_ports { iClk }];#set
+set_property -dict {PACKAGE_PIN H16 IOSTANDARD LVCMOS33} [get_ports iClk]
+create_clock -period 8.000 -name sys_clk_pin -waveform {0.000 4.000} -add [get_ports iClk]
 
 ## RGB LEDs
-#set_property -dict { PACKAGE_PIN L15   IOSTANDARD LVCMOS33 } [get_ports { led0_b }]; #IO_L22N_T3_AD7N_35 Sch=led0_b
-set_property -dict { PACKAGE_PIN G17   IOSTANDARD LVCMOS33 } [get_ports { led0_g }]; #IO_L16P_T2_35 Sch=led0_g
+set_property -dict {PACKAGE_PIN L15 IOSTANDARD LVCMOS33} [get_ports led0_b]
+set_property -dict {PACKAGE_PIN G17 IOSTANDARD LVCMOS33} [get_ports led0_g]
 #set_property -dict { PACKAGE_PIN N15   IOSTANDARD LVCMOS33 } [get_ports { led0_r }]; #IO_L21P_T3_DQS_AD14P_35 Sch=led0_r
 #set_property -dict { PACKAGE_PIN G14   IOSTANDARD LVCMOS33 } [get_ports { led1_b }]; #IO_0_35 Sch=led1_b
-set_property -dict { PACKAGE_PIN L14   IOSTANDARD LVCMOS33 } [get_ports { led1_g }]; #IO_L22P_T3_AD7P_35 Sch=led1_g
+set_property -dict {PACKAGE_PIN L14 IOSTANDARD LVCMOS33} [get_ports led1_g]
 #set_property -dict { PACKAGE_PIN M15   IOSTANDARD LVCMOS33 } [get_ports { led1_r }]; #IO_L23N_T3_35 Sch=led1_r
 
 ## Buttons
-set_property -dict {PACKAGE_PIN D20 IOSTANDARD LVCMOS33} [get_ports {btn0} ]; #IO_L4N_T0_35 Sch=btn[0]
+set_property -dict {PACKAGE_PIN D20 IOSTANDARD LVCMOS33} [get_ports btn0]
 #set_property -dict { PACKAGE_PIN D19   IOSTANDARD LVCMOS33 } [get_ports { btn[1] }]; #IO_L4P_T0_35 Sch=btn[1]
 
 ## Pmod Header JA
-set_property -dict { PACKAGE_PIN Y18   IOSTANDARD LVCMOS33 } [get_ports { PS2_Clk }]; #IO_L17P_T2_34 Sch=ja_p[1]
-set_property -dict { PACKAGE_PIN Y19   IOSTANDARD LVCMOS33 } [get_ports { PS2_Data }]; #IO_L17N_T2_34 Sch=ja_n[1]
+set_property -dict {PACKAGE_PIN Y18 IOSTANDARD LVCMOS33} [get_ports PS2_Clk]
+set_property -dict {PACKAGE_PIN Y19 IOSTANDARD LVCMOS33} [get_ports PS2_Data]
 #set_property -dict { PACKAGE_PIN Y16   IOSTANDARD LVCMOS33 } [get_ports { btn2 }]; #IO_L7P_T1_34 Sch=ja_p[2]
 #set_property -dict { PACKAGE_PIN Y17   IOSTANDARD LVCMOS33 } [get_ports { btn3 }]; #IO_L7N_T1_34 Sch=ja_n[2]
 #set_property -dict { PACKAGE_PIN U18   IOSTANDARD LVCMOS33 } [get_ports { ja[4] }]; #IO_L12P_T1_MRCC_34 Sch=ja_p[3]
@@ -30,8 +30,8 @@ set_property -dict { PACKAGE_PIN Y19   IOSTANDARD LVCMOS33 } [get_ports { PS2_Da
 #set_property -dict { PACKAGE_PIN W19   IOSTANDARD LVCMOS33 } [get_ports { ja[7] }]; #IO_L22N_T3_34 Sch=ja_n[4]
 
 ## Pmod Header JB
-set_property -dict { PACKAGE_PIN W14   IOSTANDARD LVCMOS33 } [get_ports { LCD_SCL }]; #IO_L8P_T1_34 Sch=jb_p[1]
-set_property -dict { PACKAGE_PIN Y14   IOSTANDARD LVCMOS33 } [get_ports { LCD_SDA }]; #IO_L8N_T1_34 Sch=jb_n[1]
+set_property -dict {PACKAGE_PIN W14 IOSTANDARD LVCMOS33} [get_ports LCD_SCL]
+set_property -dict {PACKAGE_PIN Y14 IOSTANDARD LVCMOS33} [get_ports LCD_SDA]
 #set_property -dict { PACKAGE_PIN T11   IOSTANDARD LVCMOS33 } [get_ports { LED2 }]; #IO_L1P_T0_34 Sch=jb_p[2]
 #set_property -dict { PACKAGE_PIN T10   IOSTANDARD LVCMOS33 } [get_ports { LED3 }]; #IO_L1N_T0_34 Sch=jb_n[2]
 #set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS33 } [get_ports { jb[4] }]; #IO_L18P_T2_34 Sch=jb_p[3]
@@ -89,8 +89,8 @@ set_property -dict { PACKAGE_PIN Y14   IOSTANDARD LVCMOS33 } [get_ports { LCD_SD
 #set_property -dict { PACKAGE_PIN A20   IOSTANDARD LVCMOS33 } [get_ports { ck_a11 }]; #IO_L2N_T0_AD8N_35 Sch=ad_n[8]
 
 ## ChipKit Outer Digital Header
-set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports UART_RX]
-set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS33 } [get_ports { UART_TX }]; #IO_L3N_T0_DQS_34 Sch=ck_io[1]
+#set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports UART_RX]
+#set_property -dict {PACKAGE_PIN V13 IOSTANDARD LVCMOS33} [get_ports UART_TX]
 #set_property -dict { PACKAGE_PIN T14   IOSTANDARD LVCMOS33 } [get_ports { AIN1 }]; #IO_L5P_T0_34 Sch=ck_io[2]
 #set_property -dict { PACKAGE_PIN T15   IOSTANDARD LVCMOS33 } [get_ports { AIN2 }]; #IO_L5N_T0_34 Sch=ck_io[3]
 #set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS33 } [get_ports { AIN3 }]; #IO_L21P_T3_DQS_34 Sch=ck_io[4]
@@ -105,8 +105,8 @@ set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS33 } [get_ports { UART_T
 #set_property -dict {PACKAGE_PIN G15 IOSTANDARD LVCMOS33} [get_ports lowpass_o]
 
 ## ChipKit Inner Digital Header
-#set_property -dict { PACKAGE_PIN R16   IOSTANDARD LVCMOS33 } [get_ports { ck_io26 }]; #IO_L19P_T3_34 Sch=ck_io[26]
-#set_property -dict { PACKAGE_PIN U12   IOSTANDARD LVCMOS33 } [get_ports { ck_io27 }]; #IO_L2N_T0_34 Sch=ck_io[27]
+set_property -dict {PACKAGE_PIN R16 IOSTANDARD LVCMOS33} [get_ports UART_RX]
+set_property -dict {PACKAGE_PIN U12 IOSTANDARD LVCMOS33} [get_ports UART_TX]
 #set_property -dict { PACKAGE_PIN U13   IOSTANDARD LVCMOS33 } [get_ports { ck_io28 }]; #IO_L3P_T0_DQS_PUDC_B_34 Sch=ck_io[28]
 #set_property -dict { PACKAGE_PIN V15   IOSTANDARD LVCMOS33 } [get_ports { ck_io29 }]; #IO_L10P_T1_34 Sch=ck_io[29]
 #set_property -dict { PACKAGE_PIN T16   IOSTANDARD LVCMOS33 } [get_ports { ck_io30 }]; #IO_L9P_T1_DQS_34 Sch=ck_io[30]
@@ -162,3 +162,74 @@ set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS33 } [get_ports { UART_T
 #set_property PACKAGE_PIN Y19 [get_ports {btn[1]}]
 #set_property PACKAGE_PIN Y16 [get_ports {btn[2]}]
 #set_property PACKAGE_PIN Y17 [get_ports {btn[3]}]
+
+set_property PULLUP true [get_ports UART_TX]
+set_property PULLUP true [get_ports UART_RX]
+
+set_property MARK_DEBUG true [get_nets {insty_GAME_Logic/regBuff_reg_n_0_[20][7]}]
+set_property MARK_DEBUG true [get_nets {insty_GAME_Logic/regBuff_reg_n_0_[20][0]}]
+set_property MARK_DEBUG true [get_nets {insty_GAME_Logic/regBuff_reg_n_0_[20][1]}]
+set_property MARK_DEBUG true [get_nets {insty_GAME_Logic/regBuff_reg_n_0_[20][2]}]
+set_property MARK_DEBUG true [get_nets {insty_GAME_Logic/regBuff_reg_n_0_[20][3]}]
+set_property MARK_DEBUG true [get_nets {insty_GAME_Logic/regBuff_reg_n_0_[20][4]}]
+set_property MARK_DEBUG true [get_nets {insty_GAME_Logic/regBuff_reg_n_0_[20][5]}]
+set_property MARK_DEBUG true [get_nets {insty_GAME_Logic/regBuff_reg_n_0_[20][6]}]
+
+set_property MARK_DEBUG true [get_nets {inst_uart/rx_reg[0]}]
+set_property MARK_DEBUG true [get_nets {inst_uart/rx_reg[1]}]
+set_property MARK_DEBUG true [get_nets {inst_uart/rx_reg[2]}]
+set_property MARK_DEBUG true [get_nets {inst_uart/rx_reg[3]}]
+set_property MARK_DEBUG true [get_nets {inst_uart/rx_reg[4]}]
+set_property MARK_DEBUG true [get_nets {inst_uart/rx_reg[5]}]
+set_property MARK_DEBUG true [get_nets {inst_uart/rx_reg[6]}]
+set_property MARK_DEBUG true [get_nets {inst_uart/rx_reg[7]}]
+create_debug_core u_ila_0 ila
+set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
+set_property ALL_PROBE_SAME_MU_CNT 4 [get_debug_cores u_ila_0]
+set_property C_ADV_TRIGGER true [get_debug_cores u_ila_0]
+set_property C_DATA_DEPTH 2048 [get_debug_cores u_ila_0]
+set_property C_EN_STRG_QUAL true [get_debug_cores u_ila_0]
+set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0]
+set_property C_TRIGIN_EN false [get_debug_cores u_ila_0]
+set_property C_TRIGOUT_EN false [get_debug_cores u_ila_0]
+set_property port_width 1 [get_debug_ports u_ila_0/clk]
+connect_debug_port u_ila_0/clk [get_nets [list iClk_IBUF_BUFG]]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe0]
+set_property port_width 8 [get_debug_ports u_ila_0/probe0]
+connect_debug_port u_ila_0/probe0 [get_nets [list {inst_uart/rx_reg[0]} {inst_uart/rx_reg[1]} {inst_uart/rx_reg[2]} {inst_uart/rx_reg[3]} {inst_uart/rx_reg[4]} {inst_uart/rx_reg[5]} {inst_uart/rx_reg[6]} {inst_uart/rx_reg[7]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe1]
+set_property port_width 1 [get_debug_ports u_ila_0/probe1]
+connect_debug_port u_ila_0/probe1 [get_nets [list {insty_GAME_Logic/regBuff_reg_n_0_[20][0]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe2]
+set_property port_width 1 [get_debug_ports u_ila_0/probe2]
+connect_debug_port u_ila_0/probe2 [get_nets [list {insty_GAME_Logic/regBuff_reg_n_0_[20][1]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe3]
+set_property port_width 1 [get_debug_ports u_ila_0/probe3]
+connect_debug_port u_ila_0/probe3 [get_nets [list {insty_GAME_Logic/regBuff_reg_n_0_[20][2]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe4]
+set_property port_width 1 [get_debug_ports u_ila_0/probe4]
+connect_debug_port u_ila_0/probe4 [get_nets [list {insty_GAME_Logic/regBuff_reg_n_0_[20][3]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe5]
+set_property port_width 1 [get_debug_ports u_ila_0/probe5]
+connect_debug_port u_ila_0/probe5 [get_nets [list {insty_GAME_Logic/regBuff_reg_n_0_[20][4]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe6]
+set_property port_width 1 [get_debug_ports u_ila_0/probe6]
+connect_debug_port u_ila_0/probe6 [get_nets [list {insty_GAME_Logic/regBuff_reg_n_0_[20][5]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe7]
+set_property port_width 1 [get_debug_ports u_ila_0/probe7]
+connect_debug_port u_ila_0/probe7 [get_nets [list {insty_GAME_Logic/regBuff_reg_n_0_[20][6]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe8]
+set_property port_width 1 [get_debug_ports u_ila_0/probe8]
+connect_debug_port u_ila_0/probe8 [get_nets [list {insty_GAME_Logic/regBuff_reg_n_0_[20][7]}]]
+set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
+set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
+set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
+connect_debug_port dbg_hub/clk [get_nets iClk_IBUF_BUFG]

@@ -121,10 +121,7 @@ begin
     -- LCD Buffer Generator
     -- -------------------------------------------------------------------------
     process(clk, e_n)
-    begin
-        if reset_n = '0' then
-            line1_buffer <= (others => get_char(' '));
-        elsif rising_edge(clk) then --and e_n = '0' then
+    begin         
             line1_buffer(0)     <= d(127 downto 120);
             line1_buffer(1)     <= d(119 downto 112);
             line1_buffer(2)     <= d(111 downto 104);
@@ -141,48 +138,48 @@ begin
             line1_buffer(13)    <= d(23 downto 16);
             line1_buffer(14)    <= d(15 downto 8);
             line1_buffer(15)    <= d(7 downto 0);
-        end if;
+        
         
         --TODO: Do we ever use the second line?
         --  on the input from the PC
-        case selected_src is
-            when 0 => -- LDR
-                line1_buffer(5) <= get_char('L');
-                line1_buffer(6) <= get_char('D');
-                line1_buffer(7) <= get_char('R');
-            when 1 => -- TEMP
-                line1_buffer(5) <= get_char('T');
-                line1_buffer(6) <= get_char('E');
-                line1_buffer(7) <= get_char('M');
-                line1_buffer(8) <= get_char('P');
-            when 2 => -- WAVE
-                line1_buffer(5) <= get_char('W');
-                line1_buffer(6) <= get_char('A');
-                line1_buffer(7) <= get_char('V');
-                line1_buffer(8) <= get_char('E');
-            when 3 => -- POT
-                line1_buffer(5) <= get_char('P');
-                line1_buffer(6) <= get_char('O');
-                line1_buffer(7) <= get_char('T');
-            when others => null;
-        end case;
+--        case selected_src is
+--            when 0 => -- LDR
+--                line1_buffer(5) <= get_char('L');
+--                line1_buffer(6) <= get_char('D');
+--                line1_buffer(7) <= get_char('R');
+--            when 1 => -- TEMP
+--                line1_buffer(5) <= get_char('T');
+--                line1_buffer(6) <= get_char('E');
+--                line1_buffer(7) <= get_char('M');
+--                line1_buffer(8) <= get_char('P');
+--            when 2 => -- WAVE
+--                line1_buffer(5) <= get_char('W');
+--                line1_buffer(6) <= get_char('A');
+--                line1_buffer(7) <= get_char('V');
+--                line1_buffer(8) <= get_char('E');
+--            when 3 => -- POT
+--                line1_buffer(5) <= get_char('P');
+--                line1_buffer(6) <= get_char('O');
+--                line1_buffer(7) <= get_char('T');
+--            when others => null;
+--        end case;
 
         -- TODO: use this for win loss
         -- Line 2: Clock Status
-        line2_buffer <= (others => get_char(' ')); -- Clear
-        line2_buffer(0) <= get_char('C');
-        line2_buffer(1) <= get_char('l');
-        line2_buffer(2) <= get_char('k');
-        line2_buffer(3) <= get_char(':');
+--        line2_buffer <= (others => get_char(' ')); -- Clear
+--        line2_buffer(0) <= get_char('C');
+--        line2_buffer(1) <= get_char('l');
+--        line2_buffer(2) <= get_char('k');
+--        line2_buffer(3) <= get_char(':');
         
-        if clk_gen_active = '1' then
-            line2_buffer(5) <= get_char('O');
-            line2_buffer(6) <= get_char('N');
-        else
-            line2_buffer(5) <= get_char('O');
-            line2_buffer(6) <= get_char('F');
-            line2_buffer(7) <= get_char('F');
-        end if;
+--        if clk_gen_active = '1' then
+--            line2_buffer(5) <= get_char('O');
+--            line2_buffer(6) <= get_char('N');
+--        else
+--            line2_buffer(5) <= get_char('O');
+--            line2_buffer(6) <= get_char('F');
+--            line2_buffer(7) <= get_char('F');
+--        end if;
     end process;
                 
     --TODO: everything below this should not require change any more
