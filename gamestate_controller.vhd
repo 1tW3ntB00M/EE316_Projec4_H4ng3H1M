@@ -70,7 +70,7 @@ architecture Behavioral of gamestate_controller is
     signal loseBuff : charArray;
     signal gameBuff : charArray;
     
-    type state is (reset, newG, play, win, loss, gameover);
+    type state is (reset, newG, play, win0, win1, loss0, loss1, gameover);
     signal message_state : state := reset;
     
     -- Helper Function for Strings
@@ -80,6 +80,7 @@ architecture Behavioral of gamestate_controller is
     end function;
     
     signal n : integer := 0;
+    signal m : integer := 0;
 
 begin
     --TODO: make a buffer of shif registers to hold
@@ -241,6 +242,18 @@ begin
             if sCnt = sMax then
                 sCnt <= 0;
                 sClk <= '1';
+                
+                if n /= 31 then
+                    n <= n + 1;
+                else
+                    n <= 0;
+                end if;
+                
+                if m /= 65 then
+                    m <= m + 1;
+                else
+                    m <= 0;
+                end if;
             else
                 sCnt <= sCnt + 1;
                 sClk <= '0';    
@@ -248,6 +261,46 @@ begin
         end if;
     end process;
 
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            case regBuff(20) is
+                when x"00" =>
+                    oGs <= x"6";
+                    message_state <= newG;
+                when x"01" =>
+                    oGs <= x"6";
+                    message_state <= play;
+                when x"02" =>
+                    oGs <= x"5";
+                    message_state <= play;
+                when x"03" =>
+                    oGs <= x"4";
+                    message_state <= play;
+                when x"04" =>
+                    oGs <= x"3";
+                    message_state <= play;
+                when x"05" =>
+                    oGs <= x"2";
+                    message_state <= play;
+                when x"06" =>
+                    oGs <= x"1";
+                    message_state <= play;
+                when x"07" =>
+                    oGs <= x"0";
+                    message_state <= play;
+                when x"08" =>
+                    message_state <= win0;
+                when x"09" =>
+                    message_state <= loss0;
+                when x"0A" =>
+                    message_state <= gameover;
+                when others =>
+                    message_state <= reset;
+                    oGs <= x"0";
+            end case;
+        end if;
+    end process;
     
     --TODO: state machine controlled by 'gameState' that sends
     -- 'd' and update enable signal during "normal play" states
@@ -270,8 +323,8 @@ begin
     process(clk, uClk, SClk)
     begin
         if rising_edge(clk) then
-            case regBuff(20) is
-                when x"00" => --new game
+            case message_state is
+                when newG => --new game
                     q(127 downto 120) <= newBuff(0);
                     q(119 downto 112) <= newBuff(1);
                     q(111 downto 104) <= newBuff(2);
@@ -288,118 +341,25 @@ begin
                     q(23 downto 16) <= newBuff(13);
                     q(15 downto 8) <= newBuff(14);
                     q(7 downto 0) <= newBuff(15);
-                    oGs <= X"6";
+                when play => --normal play
+                    q(127 downto 120) <= regBuff(0);
+                    q(119 downto 112) <= regBuff(1);
+                    q(111 downto 104) <= regBuff(2);
+                    q(103 downto 96) <= regBuff(3);
+                    q(95 downto 88) <= regBuff(4);
+                    q(87 downto 80) <= regBuff(5);
+                    q(79 downto 72) <= regBuff(6);
+                    q(71 downto 64) <= regBuff(7);
+                    q(63 downto 56) <= regBuff(8);
+                    q(55 downto 48) <= regBuff(9);
+                    q(47 downto 40) <= regBuff(10);
+                    q(39 downto 32) <= regBuff(11);
+                    q(31 downto 24) <= regBuff(12);
+                    q(23 downto 16) <= regBuff(13);
+                    q(15 downto 8) <= regBuff(14);
+                    q(7 downto 0) <= regBuff(15);
+                when win0 =>
                     n <= 0;
-                when x"01" => --normal play
-                    q(127 downto 120) <= regBuff(0);
-                    q(119 downto 112) <= regBuff(1);
-                    q(111 downto 104) <= regBuff(2);
-                    q(103 downto 96) <= regBuff(3);
-                    q(95 downto 88) <= regBuff(4);
-                    q(87 downto 80) <= regBuff(5);
-                    q(79 downto 72) <= regBuff(6);
-                    q(71 downto 64) <= regBuff(7);
-                    q(63 downto 56) <= regBuff(8);
-                    q(55 downto 48) <= regBuff(9);
-                    q(47 downto 40) <= regBuff(10);
-                    q(39 downto 32) <= regBuff(11);
-                    q(31 downto 24) <= regBuff(12);
-                    q(23 downto 16) <= regBuff(13);
-                    q(15 downto 8) <= regBuff(14);
-                    q(7 downto 0) <= regBuff(15);
-                    oGs <= x"5";
-                when x"02" => --TODO: ther must be a better way to do this?
-                    q(127 downto 120) <= regBuff(0);
-                    q(119 downto 112) <= regBuff(1);
-                    q(111 downto 104) <= regBuff(2);
-                    q(103 downto 96) <= regBuff(3);
-                    q(95 downto 88) <= regBuff(4);
-                    q(87 downto 80) <= regBuff(5);
-                    q(79 downto 72) <= regBuff(6);
-                    q(71 downto 64) <= regBuff(7);
-                    q(63 downto 56) <= regBuff(8);
-                    q(55 downto 48) <= regBuff(9);
-                    q(47 downto 40) <= regBuff(10);
-                    q(39 downto 32) <= regBuff(11);
-                    q(31 downto 24) <= regBuff(12);
-                    q(23 downto 16) <= regBuff(13);
-                    q(15 downto 8) <= regBuff(14);
-                    q(7 downto 0) <= regBuff(15);
-                    oGs <= x"4";
-                when x"03" =>
-                    q(127 downto 120) <= regBuff(0);
-                    q(119 downto 112) <= regBuff(1);
-                    q(111 downto 104) <= regBuff(2);
-                    q(103 downto 96) <= regBuff(3);
-                    q(95 downto 88) <= regBuff(4);
-                    q(87 downto 80) <= regBuff(5);
-                    q(79 downto 72) <= regBuff(6);
-                    q(71 downto 64) <= regBuff(7);
-                    q(63 downto 56) <= regBuff(8);
-                    q(55 downto 48) <= regBuff(9);
-                    q(47 downto 40) <= regBuff(10);
-                    q(39 downto 32) <= regBuff(11);
-                    q(31 downto 24) <= regBuff(12);
-                    q(23 downto 16) <= regBuff(13);
-                    q(15 downto 8) <= regBuff(14);
-                    q(7 downto 0) <= regBuff(15);
-                    oGs <= x"3";
-                when x"04" =>
-                    q(127 downto 120) <= regBuff(0);
-                    q(119 downto 112) <= regBuff(1);
-                    q(111 downto 104) <= regBuff(2);
-                    q(103 downto 96) <= regBuff(3);
-                    q(95 downto 88) <= regBuff(4);
-                    q(87 downto 80) <= regBuff(5);
-                    q(79 downto 72) <= regBuff(6);
-                    q(71 downto 64) <= regBuff(7);
-                    q(63 downto 56) <= regBuff(8);
-                    q(55 downto 48) <= regBuff(9);
-                    q(47 downto 40) <= regBuff(10);
-                    q(39 downto 32) <= regBuff(11);
-                    q(31 downto 24) <= regBuff(12);
-                    q(23 downto 16) <= regBuff(13);
-                    q(15 downto 8) <= regBuff(14);
-                    q(7 downto 0) <= regBuff(15);
-                    oGs <= x"2";
-                when x"05" =>
-                    q(127 downto 120) <= regBuff(0);
-                    q(119 downto 112) <= regBuff(1);
-                    q(111 downto 104) <= regBuff(2);
-                    q(103 downto 96) <= regBuff(3);
-                    q(95 downto 88) <= regBuff(4);
-                    q(87 downto 80) <= regBuff(5);
-                    q(79 downto 72) <= regBuff(6);
-                    q(71 downto 64) <= regBuff(7);
-                    q(63 downto 56) <= regBuff(8);
-                    q(55 downto 48) <= regBuff(9);
-                    q(47 downto 40) <= regBuff(10);
-                    q(39 downto 32) <= regBuff(11);
-                    q(31 downto 24) <= regBuff(12);
-                    q(23 downto 16) <= regBuff(13);
-                    q(15 downto 8) <= regBuff(14);
-                    q(7 downto 0) <= regBuff(15);
-                    oGs <= x"1";
-                when x"06" =>
-                    q(127 downto 120) <= regBuff(0);
-                    q(119 downto 112) <= regBuff(1);
-                    q(111 downto 104) <= regBuff(2);
-                    q(103 downto 96) <= regBuff(3);
-                    q(95 downto 88) <= regBuff(4);
-                    q(87 downto 80) <= regBuff(5);
-                    q(79 downto 72) <= regBuff(6);
-                    q(71 downto 64) <= regBuff(7);
-                    q(63 downto 56) <= regBuff(8);
-                    q(55 downto 48) <= regBuff(9);
-                    q(47 downto 40) <= regBuff(10);
-                    q(39 downto 32) <= regBuff(11);
-                    q(31 downto 24) <= regBuff(12);
-                    q(23 downto 16) <= regBuff(13);
-                    q(15 downto 8) <= regBuff(14);
-                    q(7 downto 0) <= regBuff(15);
-                    oGs <= x"0";
-                when x"07" => --win
-                    --TODO: more than 16 characters, need to scroll
                     q(127 downto 120)   <= winBuff(n + 0);
                     q(119 downto 112)   <= winBuff(n + 1);
                     q(111 downto 104)   <= winBuff(n + 2);
@@ -416,37 +376,61 @@ begin
                     q(23 downto 16)     <= winBuff(n + 13);
                     q(15 downto 8)      <= winBuff(n + 14);
                     q(7 downto 0)       <= winBuff(n + 15);
-                    
-                    if rising_edge(sClk) and n /= 31 then
-                        n <= n + 1;
-                    elsif n = 31 then
-                        --tODO: what do i do here
-                    end if;                    
-                when x"08" => --loss
+                when win1 => --win
                     --TODO: more than 16 characters, need to scroll
-                    q(127 downto 120)   <= loseBuff(n + 0);
-                    q(119 downto 112)   <= loseBuff(n + 1);
-                    q(111 downto 104)   <= loseBuff(n + 2);
-                    q(103 downto 96)    <= loseBuff(n + 3);
-                    q(95 downto 88)     <= loseBuff(n + 4);
-                    q(87 downto 80)     <= loseBuff(n + 5);
-                    q(79 downto 72)     <= loseBuff(n + 6);
-                    q(71 downto 64)     <= loseBuff(n + 7);
-                    q(63 downto 56)     <= loseBuff(n + 8);
-                    q(55 downto 48)     <= loseBuff(n + 9);
-                    q(47 downto 40)     <= loseBuff(n + 10);
-                    q(39 downto 32)     <= loseBuff(n + 11);
-                    q(31 downto 24)     <= loseBuff(n + 12);
-                    q(23 downto 16)     <= loseBuff(n + 13);
-                    q(15 downto 8)      <= loseBuff(n + 14);
-                    q(7 downto 0)       <= loseBuff(n + 15);
-                    
-                    if rising_edge(sClk) and n /= 31 then
-                        n <= n + 1;
-                    elsif n = 31 then
-                        --tODO: what do i do here
-                    end if; --TODO: more than 16 characters, need to scroll
-                when x"09" => --game over
+                    q(127 downto 120)   <= winBuff(n + 0);
+                    q(119 downto 112)   <= winBuff(n + 1);
+                    q(111 downto 104)   <= winBuff(n + 2);
+                    q(103 downto 96)    <= winBuff(n + 3);
+                    q(95 downto 88)     <= winBuff(n + 4);
+                    q(87 downto 80)     <= winBuff(n + 5);
+                    q(79 downto 72)     <= winBuff(n + 6);
+                    q(71 downto 64)     <= winBuff(n + 7);
+                    q(63 downto 56)     <= winBuff(n + 8);
+                    q(55 downto 48)     <= winBuff(n + 9);
+                    q(47 downto 40)     <= winBuff(n + 10);
+                    q(39 downto 32)     <= winBuff(n + 11);
+                    q(31 downto 24)     <= winBuff(n + 12);
+                    q(23 downto 16)     <= winBuff(n + 13);
+                    q(15 downto 8)      <= winBuff(n + 14);
+                    q(7 downto 0)       <= winBuff(n + 15);     
+                when loss0 => --loss
+                    m <= 0;
+                    --TODO: more than 16 characters, need to scroll
+                    q(127 downto 120)   <= loseBuff(m + 0);
+                    q(119 downto 112)   <= loseBuff(m + 1);
+                    q(111 downto 104)   <= loseBuff(m + 2);
+                    q(103 downto 96)    <= loseBuff(m + 3);
+                    q(95 downto 88)     <= loseBuff(m + 4);
+                    q(87 downto 80)     <= loseBuff(m + 5);
+                    q(79 downto 72)     <= loseBuff(m + 6);
+                    q(71 downto 64)     <= loseBuff(m + 7);
+                    q(63 downto 56)     <= loseBuff(m + 8);
+                    q(55 downto 48)     <= loseBuff(m + 9);
+                    q(47 downto 40)     <= loseBuff(m + 10);
+                    q(39 downto 32)     <= loseBuff(m + 11);
+                    q(31 downto 24)     <= loseBuff(m + 12);
+                    q(23 downto 16)     <= loseBuff(m + 13);
+                    q(15 downto 8)      <= loseBuff(m + 14);
+                    q(7 downto 0)       <= loseBuff(m + 15);
+                when loss1 =>
+                    q(127 downto 120)   <= loseBuff(m + 0);
+                    q(119 downto 112)   <= loseBuff(m + 1);
+                    q(111 downto 104)   <= loseBuff(m + 2);
+                    q(103 downto 96)    <= loseBuff(m + 3);
+                    q(95 downto 88)     <= loseBuff(m + 4);
+                    q(87 downto 80)     <= loseBuff(m + 5);
+                    q(79 downto 72)     <= loseBuff(m + 6);
+                    q(71 downto 64)     <= loseBuff(m + 7);
+                    q(63 downto 56)     <= loseBuff(m + 8);
+                    q(55 downto 48)     <= loseBuff(m + 9);
+                    q(47 downto 40)     <= loseBuff(m + 10);
+                    q(39 downto 32)     <= loseBuff(m + 11);
+                    q(31 downto 24)     <= loseBuff(m + 12);
+                    q(23 downto 16)     <= loseBuff(m + 13);
+                    q(15 downto 8)      <= loseBuff(m + 14);
+                    q(7 downto 0)       <= loseBuff(m + 15);
+                when gameover => --game over
                     q(127 downto 120)   <= gameBuff(0);
                     q(119 downto 112)   <= gameBuff(1);
                     q(111 downto 104)   <= gameBuff(2);
@@ -463,10 +447,8 @@ begin
                     q(23 downto 16)     <= gameBuff(13);
                     q(15 downto 8)      <= gameBuff(14);
                     q(7 downto 0)       <= gameBuff(15);
-                    n <= 0;
                 when others =>
-                    n <= 0;
-                    oGs <= x"f";
+                    q <= (others => '0');
             end case;
         end if;
     end process;
