@@ -50,8 +50,9 @@ architecture Structural of Top_Level is
 component gamestate_controller is
     --TODO: give this a better name
     generic( clk_speed : integer := 125_000_000;
-        scroll_time : integer := 1_000); -- scroll time in ms
+        scroll_time : integer := 1); -- scroll time in ms
   Port ( clk    : in std_logic;
+    rx_clk      : in std_logic;
     reset_n     : in std_logic;
     iEn         : in std_logic; -- do i need this?
     
@@ -165,6 +166,8 @@ component uart is
     signal GAME_DATA         : std_logic_vector(127 downto 0); -- input line
     signal ld_tx_pulse       : std_logic;
     signal btn_sync          : std_logic_vector(1 downto 0);
+--    attribute mark_debug : string;
+--    attribute mark_debug of GAME_DATA : signal is "true";
 
 --------------------------------------------------------------------------------------
 
@@ -221,8 +224,9 @@ Reset_Master_n <= not Reset_Master;
 insty_GAME_Logic : gamestate_controller
     --TODO: give this a better name
     generic map( clk_speed => 125_000_000,
-        scroll_time => 1_000) -- scroll time in ms
+        scroll_time => 1) -- scroll time in ms
   Port map ( clk    => iClk,
+    rx_clk  =>  rx_clk,
     reset_n     => Reset_Master_n,
     iEn         => rx_full, -- do i need this?
     
@@ -264,7 +268,7 @@ inst_CLK_div_Uart : entity work.clock_div
   generic map(
     clock     => 125,  --The internal board clock rate in MHz
     Baud_rate => 9600, --The baud rate you want to hit
-    Bytes     => 21    --The number of byts you want to send
+    Bytes     => 16    --The number of byts you want to send
   )
   Port map(
     iClk        => iClk,
@@ -289,7 +293,7 @@ inst_uart : entity work.uart
             uld_rx_data     =>   rx_full,
             rx_data         =>   rx_data,
             rx_enable       =>   '1',
-            rx_in           =>   rx_in,
+            rx_in           =>   UART_RX,
             rx_empty        =>   rx_empty    
         );
 

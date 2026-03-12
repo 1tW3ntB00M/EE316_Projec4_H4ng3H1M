@@ -17,6 +17,9 @@ end lcd_controller;
 
 architecture Behavioral of lcd_controller is
 
+--    attribute mark_debug : string;
+--    attribute mark_debug of d : signal is "true";
+
     -- I2C Addresses
     constant ADDR_LCD : std_logic_vector(6 downto 0) := "0100111"; -- 0x27 PCF8574
 
@@ -138,6 +141,8 @@ begin
             line1_buffer(13)    <= d(23 downto 16);
             line1_buffer(14)    <= d(15 downto 8);
             line1_buffer(15)    <= d(7 downto 0);
+            
+            line2_buffer <= (others => get_char(' '));
         
         
         --TODO: Do we ever use the second line?

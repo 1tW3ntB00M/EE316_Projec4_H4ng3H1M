@@ -34,8 +34,9 @@ use IEEE.NUMERIC_STD.ALL;
 entity gamestate_controller is
     --TODO: give this a better name
     generic( clk_speed : integer := 125_000_000;
-        scroll_time : integer := 1_000); -- scroll time in ms
+        scroll_time : integer := 1); -- scroll time in ms
   Port ( clk    : in std_logic;
+    rx_clk      : in std_logic;
     reset_n     : in std_logic;
     iEn         : in std_logic; -- do i need this?
     
@@ -59,19 +60,23 @@ architecture Behavioral of gamestate_controller is
     --TODO: calculate the proper countmax for the above clocks
     --based on the generic clock speed value
     signal uMax : integer := 10;
-    signal sMax : integer := (scroll_time*(10**(-3)))*clk_speed;
+    signal sMax : integer := (scroll_time)*clk_speed;
 
     type byteArray is array(0 to 20) of std_logic_vector(7 downto 0);
     signal regBuff : byteArray;
+    
+    attribute mark_debug : string;
+    attribute mark_debug of oGs : signal is "true";
 
     type charArray is array(0 to 81) of std_logic_vector(7 downto 0);
     signal newBuff : charArray;
     signal winBuff : charArray;
     signal loseBuff : charArray;
     signal gameBuff : charArray;
+    signal errorBuff : charArray;
     
     type state is (reset, newG, play, win0, win1, loss0, loss1, gameover);
-    signal message_state : state := reset;
+    signal message_state : state := newG;
     
     -- Helper Function for Strings
     function get_char(c : character) return std_logic_vector is
@@ -81,6 +86,30 @@ architecture Behavioral of gamestate_controller is
     
     signal n : integer := 0;
     signal m : integer := 0;
+    
+    signal testReg : std_logic_vector(7 downto 0);
+    signal testReg1 : std_logic_vector(7 downto 0);
+    signal testReg2 : std_logic_vector(7 downto 0);
+    signal testReg3 : std_logic_vector(7 downto 0);
+    signal testReg4 : std_logic_vector(7 downto 0);
+    signal testReg5 : std_logic_vector(7 downto 0);
+    signal testReg6 : std_logic_vector(7 downto 0);
+    signal testReg7 : std_logic_vector(7 downto 0);
+    signal testReg8 : std_logic_vector(7 downto 0);
+    signal testReg9 : std_logic_vector(7 downto 0);
+    signal testReg10 : std_logic_vector(7 downto 0);
+    signal testReg11 : std_logic_vector(7 downto 0);
+    signal testReg12 : std_logic_vector(7 downto 0);
+    signal testReg13 : std_logic_vector(7 downto 0);
+    signal testReg14 : std_logic_vector(7 downto 0);
+    signal testReg15 : std_logic_vector(7 downto 0);
+    signal testReg16 : std_logic_vector(7 downto 0);
+    signal testReg17 : std_logic_vector(7 downto 0);
+    signal testReg18 : std_logic_vector(7 downto 0);
+    signal testReg19 : std_logic_vector(7 downto 0);
+    signal testReg20 : std_logic_vector(7 downto 0);
+--    attribute mark_debug : string;
+--    attribute mark_debug of testReg : signal is "true";
 
 begin
     --TODO: make a buffer of shif registers to hold
@@ -189,30 +218,102 @@ begin
     gameBuff(7) <= get_char('E');
     gameBuff(8) <= get_char('R');
     
-    process(clk)
+    errorBuff <= (others => get_char(' '));
+    errorBuff(0) <= get_char('E');
+    errorBuff(1) <= get_char('R');
+    errorBuff(2) <= get_char('R');
+    errorBuff(3) <= get_char('O');
+    errorBuff(4) <= get_char('R');
+    errorBuff(5) <= get_char(' ');
+    errorBuff(6) <= get_char('N');
+    errorBuff(7) <= get_char('O');
+    errorBuff(8) <= get_char(' ');
+    errorBuff(9) <= get_char('S');
+    errorBuff(10) <= get_char('T');
+    errorBuff(11) <= get_char('A');
+    errorBuff(12) <= get_char('T');
+    errorBuff(13) <= get_char('E');
+    
+--    process(rx_clk)
+--    begin --TODO: this may be backwards
+--        if rising_edge(rx_clk) and iEn = '1' then
+--            regBuff(0)  <= regBuff(1);
+--            regBuff(1)  <= regBuff(2);
+--            regBuff(2)  <= regBuff(3); 
+--            regBuff(3)  <= regBuff(4); 
+--            regBuff(4)  <= regBuff(5); 
+--            regBuff(5)  <= regBuff(6); 
+--            regBuff(6)  <= regBuff(7); 
+--            regBuff(7)  <= regBuff(8); 
+--            regBuff(8)  <= regBuff(9); 
+--            regBuff(9)  <= regBuff(10);
+--            regBuff(10) <= regBuff(11);
+--            regBuff(11) <= regBuff(12);
+--            regBuff(12) <= regBuff(13);
+--            regBuff(13) <= regBuff(14);
+--            regBuff(14) <= regBuff(15);
+--            regBuff(15) <= regBuff(16);
+--            regBuff(16) <= regBuff(17);
+--            regBuff(17) <= regBuff(18);
+--            regBuff(18) <= regBuff(19);
+--            regBuff(19) <= regBuff(20);
+--            regBuff(20) <= d;
+--            testReg <= d;
+--        end if;
+--    end process;
+
+--    process(iEn)
+--    begin --TODO: this may be backwards
+--        if falling_edge(iEn) then
+--            testReg <= d;
+--            regBuff(20)  <= d;
+--            regBuff(19)  <= regBuff(20);
+--            regBuff(18)  <= regBuff(19); 
+--            regBuff(17)  <= regBuff(18); 
+--            regBuff(16)  <= regBuff(17); 
+--            regBuff(15)  <= regBuff(16); 
+--            regBuff(14)  <= regBuff(15); 
+--            regBuff(13)  <= regBuff(14); 
+--            regBuff(12)  <= regBuff(13); 
+--            regBuff(11)  <= regBuff(12);
+--            regBuff(10) <= regBuff(11);
+--            regBuff(9) <= regBuff(10);
+--            regBuff(8) <= regBuff(9);
+--            regBuff(7) <= regBuff(8);
+--            regBuff(6) <= regBuff(7);
+--            regBuff(5) <= regBuff(6);
+--            regBuff(4) <= regBuff(5);
+--            regBuff(3) <= regBuff(4);
+--            regBuff(2) <= regBuff(3);
+--            regBuff(1) <= regBuff(2);
+--            regBuff(0) <= regBuff(1);
+--        end if;
+--    end process;
+
+process(iEn)
     begin --TODO: this may be backwards
-        if rising_edge(clk) and iEn = '1' then
-            regBuff(0)  <= regBuff(1);
-            regBuff(1)  <= regBuff(2);
-            regBuff(2)  <= regBuff(3); 
-            regBuff(3)  <= regBuff(4); 
-            regBuff(4)  <= regBuff(5); 
-            regBuff(5)  <= regBuff(6); 
-            regBuff(6)  <= regBuff(7); 
-            regBuff(7)  <= regBuff(8); 
-            regBuff(8)  <= regBuff(9); 
-            regBuff(9)  <= regBuff(10);
-            regBuff(10) <= regBuff(11);
-            regBuff(11) <= regBuff(12);
-            regBuff(12) <= regBuff(13);
-            regBuff(13) <= regBuff(14);
-            regBuff(14) <= regBuff(15);
-            regBuff(15) <= regBuff(16);
-            regBuff(16) <= regBuff(17);
-            regBuff(17) <= regBuff(18);
-            regBuff(18) <= regBuff(19);
-            regBuff(19) <= regBuff(20);
-            regBuff(20) <= d;
+        if falling_edge(iEn) then
+            testReg <= d;
+            testReg1 <= testReg;
+            testReg2 <= testReg1;
+            testReg3 <= testReg2;
+            testReg4 <= testReg3;
+            testReg5 <= testReg4;
+            testReg6 <= testReg5;
+            testReg7 <= testReg6;
+            testReg8 <= testReg7;
+            testReg9 <= testReg8;
+            testReg10 <= testReg9;
+            testReg11 <= testReg10;
+            testReg12 <= testReg11;
+            testReg13 <= testReg12;
+            testReg14 <= testReg13;
+            testReg15 <= testReg14;
+            testReg16 <= testReg15;
+            testReg17 <= testReg16;
+            testReg18 <= testReg17;
+            testReg19 <= testReg18;
+            testReg20 <= testReg19;
         end if;
     end process;
     
@@ -243,10 +344,10 @@ begin
                 sCnt <= 0;
                 sClk <= '1';
                 
-                if n /= 31 then
-                    n <= n + 1;
-                else
+                if n >= 31 then
                     n <= 0;
+                else
+                    n <= n + 1;
                 end if;
                 
                 if m /= 65 then
@@ -264,7 +365,7 @@ begin
     process(clk)
     begin
         if rising_edge(clk) then
-            case regBuff(20) is
+            case testReg is-- regBuff(20) is
                 when x"00" =>
                     oGs <= x"6";
                     message_state <= newG;
@@ -290,14 +391,14 @@ begin
                     oGs <= x"0";
                     message_state <= play;
                 when x"08" =>
-                    message_state <= win0;
+                    message_state <= win1;
                 when x"09" =>
-                    message_state <= loss0;
+                    message_state <= loss1;
                 when x"0A" =>
                     message_state <= gameover;
                 when others =>
                     message_state <= reset;
-                    oGs <= x"0";
+                    oGs <= x"f";
             end case;
         end if;
     end process;
@@ -342,22 +443,22 @@ begin
                     q(15 downto 8) <= newBuff(14);
                     q(7 downto 0) <= newBuff(15);
                 when play => --normal play
-                    q(127 downto 120) <= regBuff(0);
-                    q(119 downto 112) <= regBuff(1);
-                    q(111 downto 104) <= regBuff(2);
-                    q(103 downto 96) <= regBuff(3);
-                    q(95 downto 88) <= regBuff(4);
-                    q(87 downto 80) <= regBuff(5);
-                    q(79 downto 72) <= regBuff(6);
-                    q(71 downto 64) <= regBuff(7);
-                    q(63 downto 56) <= regBuff(8);
-                    q(55 downto 48) <= regBuff(9);
-                    q(47 downto 40) <= regBuff(10);
-                    q(39 downto 32) <= regBuff(11);
-                    q(31 downto 24) <= regBuff(12);
-                    q(23 downto 16) <= regBuff(13);
-                    q(15 downto 8) <= regBuff(14);
-                    q(7 downto 0) <= regBuff(15);
+                    q(127 downto 120)   <= testReg20;
+                    q(119 downto 112)   <= testReg19;
+                    q(111 downto 104)   <= testReg18;
+                    q(103 downto 96)    <= testReg17;
+                    q(95 downto 88)     <= testReg16;
+                    q(87 downto 80)     <= testReg15;
+                    q(79 downto 72)     <= testReg14;
+                    q(71 downto 64)     <= testReg13;
+                    q(63 downto 56)     <= testReg12;
+                    q(55 downto 48)     <= testReg11;
+                    q(47 downto 40)     <= testReg10;
+                    q(39 downto 32)     <= testReg9;
+                    q(31 downto 24)     <= testReg8;
+                    q(23 downto 16)     <= testReg7;
+                    q(15 downto 8)      <= testReg6;
+                    q(7 downto 0)       <= testReg5;
                 when win0 =>
                     n <= 0;
                     q(127 downto 120)   <= winBuff(n + 0);
@@ -448,7 +549,23 @@ begin
                     q(15 downto 8)      <= gameBuff(14);
                     q(7 downto 0)       <= gameBuff(15);
                 when others =>
-                    q <= (others => '0');
+                    --q <= (others => '0');
+                    q(127 downto 120)   <= errorBuff(0);
+                    q(119 downto 112)   <= errorBuff(1);
+                    q(111 downto 104)   <= errorBuff(2);
+                    q(103 downto 96)    <= errorBuff(3);
+                    q(95 downto 88)     <= errorBuff(4);
+                    q(87 downto 80)     <= errorBuff(5);
+                    q(79 downto 72)     <= errorBuff(6);
+                    q(71 downto 64)     <= errorBuff(7);
+                    q(63 downto 56)     <= errorBuff(8);
+                    q(55 downto 48)     <= errorBuff(9);
+                    q(47 downto 40)     <= errorBuff(10);
+                    q(39 downto 32)     <= errorBuff(11);
+                    q(31 downto 24)     <= errorBuff(12);
+                    q(23 downto 16)     <= errorBuff(13);
+                    q(15 downto 8)      <= errorBuff(14);
+                    q(7 downto 0)       <= errorBuff(15);
             end case;
         end if;
     end process;
