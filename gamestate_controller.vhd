@@ -324,43 +324,43 @@ process(iEn)
     -- 9600?
     -- the scrolling clockk should be some slower rate for reading
     -- something like half a second
-    process(clk)
-    begin
-        if reset_n = '0' then
-            uCnt <= 0;
-            uClk <= '0';
-            sCnt <= 0;
-            sClk <= '0';
-        elsif rising_edge(clk) then
-            if uCnt = uMax then
-                uCnt <= 0;
-                uClk <= '1';
-            else
-                uCnt <= uCnt + 1;
-                uClk <= '0';
-            end if;
+--    process(clk)
+--    begin
+--        if reset_n = '0' then
+--            uCnt <= 0;
+--            uClk <= '0';
+--            sCnt <= 0;
+--            sClk <= '0';
+--        elsif rising_edge(clk) then
+--            if uCnt = uMax then
+--                uCnt <= 0;
+--                uClk <= '1';
+--            else
+--                uCnt <= uCnt + 1;
+--                uClk <= '0';
+--            end if;
             
-            if sCnt = sMax then
-                sCnt <= 0;
-                sClk <= '1';
+--            if sCnt = sMax then
+--                sCnt <= 0;
+--                sClk <= '1';
                 
-                if n >= 31 then
-                    n <= 0;
-                else
-                    n <= n + 1;
-                end if;
+--                if n >= 31 then
+--                    n <= 0;
+--                else
+--                    n <= n + 1;
+--                end if;
                 
-                if m /= 65 then
-                    m <= m + 1;
-                else
-                    m <= 0;
-                end if;
-            else
-                sCnt <= sCnt + 1;
-                sClk <= '0';    
-            end if;
-        end if;
-    end process;
+--                if m /= 65 then
+--                    m <= m + 1;
+--                else
+--                    m <= 0;
+--                end if;
+--            else
+--                sCnt <= sCnt + 1;
+--                sClk <= '0';    
+--            end if;
+--        end if;
+--    end process;
 
     process(clk)
     begin
@@ -423,7 +423,40 @@ process(iEn)
     --  send game over 0 to 15 at update speed
     process(clk, uClk, SClk)
     begin
-        if rising_edge(clk) then
+        if reset_n = '0' then
+            uCnt <= 0;
+            uClk <= '0';
+            sCnt <= 0;
+            sClk <= '0';
+        elsif rising_edge(clk) then
+            if uCnt = uMax then
+                uCnt <= 0;
+                uClk <= '1';
+            else
+                uCnt <= uCnt + 1;
+                uClk <= '0';
+            end if;
+            
+            if sCnt = sMax then
+                sCnt <= 0;
+                sClk <= '1';
+                
+                if n >= 31 then
+                    n <= 0;
+                else
+                    n <= n + 1;
+                end if;
+                
+                if m /= 65 then
+                    m <= m + 1;
+                else
+                    m <= 0;
+                end if;
+            else
+                sCnt <= sCnt + 1;
+                sClk <= '0';    
+            end if;
+        
             case message_state is
                 when newG => --new game
                     q(127 downto 120) <= newBuff(0);
