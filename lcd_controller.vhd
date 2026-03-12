@@ -6,7 +6,7 @@ entity lcd_controller is
     Port ( 
         clk         : in STD_LOGIC; -- 125 MHz System Clock
         reset_n     : in std_logic;
-        d           : in std_logic_vector(7 downto 0); -- input character
+        d           : in std_logic_vector(127 downto 0); -- input line
         e_n         : in std_logic; -- enable signal, (next character) 
         
         -- ChipKit I2C
@@ -17,8 +17,10 @@ end lcd_controller;
 
 architecture Behavioral of lcd_controller is
 
+--    attribute mark_debug : string;
+--    attribute mark_debug of d : signal is "true";
+
     -- I2C Addresses
-    --constant ADDR_ADC : std_logic_vector(6 downto 0) := "1001000"; -- 0x48 PCF8591
     constant ADDR_LCD : std_logic_vector(6 downto 0) := "0100111"; -- 0x27 PCF8574
 
     -- Timing Constants (based on 125MHz clock)
@@ -27,9 +29,9 @@ architecture Behavioral of lcd_controller is
     
     --TODO: dont use?
     -- Inputs
-    signal btn_reset  : std_logic;
-    signal btn_raw    : std_logic_vector(3 downto 0);
-    signal btn_pulsed : std_logic_vector(3 downto 0);
+--    signal btn_reset  : std_logic;
+--    signal btn_raw    : std_logic_vector(3 downto 0);
+--    signal btn_pulsed : std_logic_vector(3 downto 0);
     
     -- I2C Master Signals
     signal i2c_ena     : std_logic := '0';
@@ -48,10 +50,10 @@ architecture Behavioral of lcd_controller is
     signal clk_gen_active : std_logic := '0';
     
     -- Data Registers
-    signal adc_ldr   : std_logic_vector(7 downto 0) := (others => '0'); -- AIN0
-    signal adc_temp  : std_logic_vector(7 downto 0) := (others => '0'); -- AIN1
-    signal adc_wave  : std_logic_vector(7 downto 0) := (others => '0'); -- AIN2 (Waveform)
-    signal adc_pot   : std_logic_vector(7 downto 0) := (others => '0'); -- AIN3 (Potentiometer)
+--    signal adc_ldr   : std_logic_vector(7 downto 0) := (others => '0'); -- AIN0
+--    signal adc_temp  : std_logic_vector(7 downto 0) := (others => '0'); -- AIN1
+--    signal adc_wave  : std_logic_vector(7 downto 0) := (others => '0'); -- AIN2 (Waveform)
+--    signal adc_pot   : std_logic_vector(7 downto 0) := (others => '0'); -- AIN3 (Potentiometer)
 
     -- FSM State Definitions
     type state is (
@@ -121,59 +123,71 @@ begin
     -- -------------------------------------------------------------------------
     -- LCD Buffer Generator
     -- -------------------------------------------------------------------------
-    --TODO: i dont thinkk this needs 'selected_src'
-    process(clk_gen_active)
-    begin
-        --TODO: this is also hard coded and needs to be
-        --  replaced with
-        -- Line 1: Source
-        line1_buffer <= (others => get_char(' ')); -- Clear
-        line1_buffer(0) <= get_char('S');
-        line1_buffer(1) <= get_char('r');
-        line1_buffer(2) <= get_char('c');
-        line1_buffer(3) <= get_char(':');
+    process(clk, e_n)
+    begin         
+            line1_buffer(0)     <= d(127 downto 120);
+            line1_buffer(1)     <= d(119 downto 112);
+            line1_buffer(2)     <= d(111 downto 104);
+            line1_buffer(3)     <= d(103 downto 96);
+            line1_buffer(4)     <= d(95 downto 88);
+            line1_buffer(5)     <= d(87 downto 80);
+            line1_buffer(6)     <= d(79 downto 72);
+            line1_buffer(7)     <= d(71 downto 64);
+            line1_buffer(8)     <= d(63 downto 56);
+            line1_buffer(9)     <= d(55 downto 48);
+            line1_buffer(10)    <= d(47 downto 40);
+            line1_buffer(11)    <= d(39 downto 32);
+            line1_buffer(12)    <= d(31 downto 24);
+            line1_buffer(13)    <= d(23 downto 16);
+            line1_buffer(14)    <= d(15 downto 8);
+            line1_buffer(15)    <= d(7 downto 0);
+            
+            line2_buffer <= (others => get_char(' '));
         
-        --TODO: this is hard coded, change this to set the buffer based
+        
+        --TODO: Do we ever use the second line?
         --  on the input from the PC
-        case selected_src is
-            when 0 => -- LDR
-                line1_buffer(5) <= get_char('L');
-                line1_buffer(6) <= get_char('D');
-                line1_buffer(7) <= get_char('R');
-            when 1 => -- TEMP
-                line1_buffer(5) <= get_char('T');
-                line1_buffer(6) <= get_char('E');
-                line1_buffer(7) <= get_char('M');
-                line1_buffer(8) <= get_char('P');
-            when 2 => -- WAVE
-                line1_buffer(5) <= get_char('W');
-                line1_buffer(6) <= get_char('A');
-                line1_buffer(7) <= get_char('V');
-                line1_buffer(8) <= get_char('E');
-            when 3 => -- POT
-                line1_buffer(5) <= get_char('P');
-                line1_buffer(6) <= get_char('O');
-                line1_buffer(7) <= get_char('T');
-            when others => null;
-        end case;
+--        case selected_src is
+--            when 0 => -- LDR
+--                line1_buffer(5) <= get_char('L');
+--                line1_buffer(6) <= get_char('D');
+--                line1_buffer(7) <= get_char('R');
+--            when 1 => -- TEMP
+--                line1_buffer(5) <= get_char('T');
+--                line1_buffer(6) <= get_char('E');
+--                line1_buffer(7) <= get_char('M');
+--                line1_buffer(8) <= get_char('P');
+--            when 2 => -- WAVE
+--                line1_buffer(5) <= get_char('W');
+--                line1_buffer(6) <= get_char('A');
+--                line1_buffer(7) <= get_char('V');
+--                line1_buffer(8) <= get_char('E');
+--            when 3 => -- POT
+--                line1_buffer(5) <= get_char('P');
+--                line1_buffer(6) <= get_char('O');
+--                line1_buffer(7) <= get_char('T');
+--            when others => null;
+--        end case;
 
         -- TODO: use this for win loss
         -- Line 2: Clock Status
-        line2_buffer <= (others => get_char(' ')); -- Clear
-        line2_buffer(0) <= get_char('C');
-        line2_buffer(1) <= get_char('l');
-        line2_buffer(2) <= get_char('k');
-        line2_buffer(3) <= get_char(':');
+--        line2_buffer <= (others => get_char(' ')); -- Clear
+--        line2_buffer(0) <= get_char('C');
+--        line2_buffer(1) <= get_char('l');
+--        line2_buffer(2) <= get_char('k');
+--        line2_buffer(3) <= get_char(':');
         
-        if clk_gen_active = '1' then
-            line2_buffer(5) <= get_char('O');
-            line2_buffer(6) <= get_char('N');
-        else
-            line2_buffer(5) <= get_char('O');
-            line2_buffer(6) <= get_char('F');
-            line2_buffer(7) <= get_char('F');
-        end if;
+--        if clk_gen_active = '1' then
+--            line2_buffer(5) <= get_char('O');
+--            line2_buffer(6) <= get_char('N');
+--        else
+--            line2_buffer(5) <= get_char('O');
+--            line2_buffer(6) <= get_char('F');
+--            line2_buffer(7) <= get_char('F');
+--        end if;
     end process;
+                
+    --TODO: everything below this should not require change any more
                 
     -- -------------------------------------------------------------------------
     -- MAIN I2C FSM

@@ -1,4 +1,5 @@
-// TODO: include string, and print, and terminal shtuff
+// TODO: sending over uart causes inability to recieve over uart
+//	do we need to wait until rx is empty to use tx?
 #include <cstdio>
 #include <iostream>
 #include <string>
@@ -22,7 +23,7 @@ string availableLetters;
 string guessed;
 
 //this should be the number of lines in our text file
-#define WORD_MAX 3;
+#define WORD_MAX 45333;
 
 int gameState = 0;
 
@@ -32,13 +33,16 @@ string getWord(string);
 
 void display(int);
 
-void sendLCD(string);
+void sendLCD(string,serialib,int,int);
 
 int update(char);
 
 bool isIn(char, string);
 
-//TODO: printf problems
+char getChar(serialib);
+
+//=============================================================================================
+
 int main()
 {
 	char yn;
@@ -52,36 +56,40 @@ int main()
 
 	//open serial connection
 	serialib serial = serialib();
-	//TODO: adjust com and baud
-	serial.openDevice("\\\\.\\COM3", 115200);
+	// //TODO: adjust com and baud
+	// serial.openDevice("\\\\.\\COM5", 9600, SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1);
 
-	if(serial.isDeviceOpen())
-        printf("device is open\n");
-    else
-    {
-        printf("device is not open\n");
-		serial.closeDevice();
-        return 1;
-    }
+	// if(serial.isDeviceOpen())
+    //     printf("device is open\n");
+    // else
+    // {
+    //     printf("device is not open\n");
+	// 	serial.closeDevice();
+    //     return 1;
+    // }
 
 	for(;;)
 	{
-		printf("New game?\n");
+		//reset game state 
+		gameState = 0;
+		sendLCD("", serial, wins, games);
+		printf("New game? (Y/N)\n");
 
-		//cin >> yn
-		serial.readChar(&yn);
+		//cin >> yn;
+		//serial.readChar(&yn);
+		yn = getChar(serial);
 
 		if(yn == 'Y')
 		{
-			//reset game state
-			gameState = 0;
+			//reset win con
+			gameState++;
 			winCon = 0;
 
 			//increment number of games played
 			games++;
 
 			//get a random word and save it as the answer
-			answer = getWord("./diction.txt");
+			answer = getWord("./dictionary.txt");
 
 			//reset available letters, and guessed letters
 			availableLetters = alphaBet;
@@ -96,44 +104,70 @@ int main()
 				hiddenWord = hiddenWord + '_';
 			}
 
-			display(0);
+			display(1);
+			sendLCD(hiddenWord, serial, wins, games);
 
-			for(gameState = 0; gameState < 6; )
+			for(;;)
 			{
-				guess = getLetter(serial);
+				//guess = getLetter(serial);
+				printf("guess a letter\n");
+				guess = getChar(serial);
 
 				winCon = update(guess);
 
 				display(gameState);
+				sendLCD(hiddenWord, serial, wins, games);
 
 				if(winCon)
 				{
 					wins++;
+					gameState = 8;
+					sendLCD(answer, serial, wins, games);
 					printf("\nWell done! You have solved %d puzzles out of %d\n", wins, games);
+
+					//wait for input before breaking
+					//cin >> yn;
+					//serial.readChar(&yn);
+					yn = getChar(serial);
+					//if(isIn(yn, alphaBet))
+					//{	
+						break;
+					//}
+				}
+
+				if(gameState == 7)
+				{
+					gameState = 9;
+					sendLCD(answer, serial, wins, games);
+					printf("\nSorry! The correct word was ");
+					cout << answer;
+					printf(". you have solved %d puzzles out of %d\n", wins, games);
+
+					//wait for input before breaking
+					//cin >> yn;
+					//serial.readChar(&yn);
+					yn = getChar(serial);
 					break;
 				}
-
-				if(gameState == 6)
-				{
-					printf("\nSorry! The correct word was %s. you have solved %d puzzles out of %d\n", answer, wins, games);
-				}
-
-				
 			}
-
-			printf("\ngame over\n");
 		}
-		else
+		else if (yn == 'N')
 		{
 			break;
 		}
 	}
+
+	gameState = 10;
+	sendLCD(answer, serial, wins, games);
+	printf("\ngame over\n");
 
 	//close serial connection
 	serial.closeDevice();
 
 	return 0;
 }
+
+//=============================================================================================
 
 char getLetter(serialib serial)
 {
@@ -149,20 +183,26 @@ char getLetter(serialib serial)
 	for(;;)
 	{
 		//cin >> letter;
-		serial.readChar(&letter);
+		//serial.readChar(&letter);
+		letter = getChar(serial);
 
-		if(isIn(letter,guessed))
+		if(isIn(letter, alphaBet))
 		{
-			printf("You already guessed that,\n choose another letter!\n");
-		}
-		else
-		{
-			break;
+			if(isIn(letter,guessed))
+			{
+				printf("You already guessed that,\n choose another letter!\n");
+			}
+			else
+			{
+				break;
+			}
 		}
 	}
 
 	return letter;
 }
+
+//=============================================================================================
 
 string getWord(string fileName)
 {
@@ -178,80 +218,97 @@ string getWord(string fileName)
 	}
 	else 
 		printf("opened file\n");
-
-	//generate a random number from (0, max line num -1)
-	int lineNum = rand() % WORD_MAX;
-
-	//adjust random number to (1,max line num)
-	lineNum++;
-
-	//probably a better way to do this
-	//oh well
-	//get line a random number of times
-	//the last one will be our word
-	for(int i = 0; i != lineNum; i++)
+	
+	for(;;)
 	{
-		getline(file, word);
+		//generate a random number from (0, max line num -1)
+		int lineNum = rand() % WORD_MAX;
+
+		//adjust random number to (1,max line num)
+		lineNum++;
+
+		//probably a better way to do this
+		//oh well
+		//get line a random number of times
+		//the last one will be our word
+		for(int i = 0; i != lineNum; i++)
+		{
+			getline(file, word);
+		}
+
+		if(word.length() <= 16)
+		{
+			break;
+		}
 	}
+
 
 	file.close();
 	
 	return word;
 }
 
+//=============================================================================================
+
 void display(int x)
 {
+	//clear terminal
+	system("cls");
+
 	//print gallows
 	switch(x)
 	{
-		case 0:
-			wprintf(L"┌──┐\n");
-			wprintf(L"│\n");
-			wprintf(L"│\n");
-			wprintf(L"│\n");
-			wprintf(L"┴\n");
-			break;
 		case 1:
 			wprintf(L"┌──┐\n");
-			wprintf(L"│  ☺\n");
+			wprintf(L"│\n");
 			wprintf(L"│\n");
 			wprintf(L"│\n");
 			wprintf(L"┴\n");
 			break;
 		case 2:
 			wprintf(L"┌──┐\n");
-			wprintf(L"│  ☺\n");
-			wprintf(L"│  │\n");
+			wprintf(L"│  ");printf("0\n");
+			wprintf(L"│\n");
 			wprintf(L"│\n");
 			wprintf(L"┴\n");
 			break;
 		case 3:
 			wprintf(L"┌──┐\n");
-			wprintf(L"│  ☺\n");
-			wprintf(L"│ /│\n");
+			wprintf(L"│  ");printf("0\n");
+			wprintf(L"│  │\n");
 			wprintf(L"│\n");
 			wprintf(L"┴\n");
 			break;
 		case 4:
 			wprintf(L"┌──┐\n");
-			wprintf(L"│  ☺\n");
-			wprintf(L"│ /│\\\n");
+			wprintf(L"│  "); printf("0\n");
+			wprintf(L"│ /│\n");
 			wprintf(L"│\n");
 			wprintf(L"┴\n");
 			break;
 		case 5:
 			wprintf(L"┌──┐\n");
-			wprintf(L"│  ☺\n");
+			wprintf(L"│  ");printf("0\n");
 			wprintf(L"│ /│\\\n");
-			wprintf(L"│ /\n");
+			wprintf(L"│\n");
 			wprintf(L"┴\n");
 			break;
 		case 6:
 			wprintf(L"┌──┐\n");
-			wprintf(L"│  ☺\n");
+			wprintf(L"│  ");printf("0\n");
+			wprintf(L"│ /│\\\n");
+			wprintf(L"│ /\n");
+			wprintf(L"┴\n");
+			break;
+		case 7:
+			wprintf(L"┌──┐\n");
+			wprintf(L"│  ");printf("0\n");
 			wprintf(L"│ /│\\\n");
 			wprintf(L"│ / \\\n");
 			wprintf(L"┴\n");
+			break;
+		default:
+			wprintf(L"gamestate error, cannot display");
 			break;
 	}	
 	
@@ -267,15 +324,18 @@ void display(int x)
 
 	//print guesses
 	//printf("%s",guessed);
-	cout << guessed;
+	cout 
+	<< guessed;
 	printf("\n\n");
 }
+
+//=============================================================================================
 
 //TODO: need the serialib to send
 //maybe writeString() for the word
 //then ~5 writeBytes() for the gamestate
 //and w/l
-void sendLCD(string x)
+void sendLCD(string x, serialib serial, int wins, int loss)
 {
 	//TODO: send the hiddenWord back through UART
 	// send the game state back through uart
@@ -288,7 +348,58 @@ void sendLCD(string x)
 	//then after 16 characters always send game state,
 	//wins, and games, as numbers in the same order
 	//each time
+
+	//open serial connection
+	serial.openDevice("\\\\.\\COM6", 9600, SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1);
+
+	//initialise 16 character word
+	string sendWord = "                ";
+
+
+	for(int i = 0; i < x.length(); i++)
+	{
+		sendWord[i] = x[i];
+	}
+
+	//initialise two byte win
+	unsigned char wub = (wins >> 8) & 0b11111111;
+	unsigned char wlb = wins & 0b11111111;
+
+	//initialise two byte loss
+	unsigned char lub = (loss >> 8) & 0b11111111;
+	unsigned char llb = loss & 0b1111111;
+
+	//initialise one byte game state
+	unsigned char gs = (unsigned char) gameState;
+
+	unsigned char gameData[5] = {wub, wlb, lub, llb, gs};
+
+	//send 16 character word
+	for(int i = 0; i < 15; i++)
+	{
+		serial.writeChar(sendWord[i]);
+	}
+
+	// //send wins
+	// serial.writeBytes(&wub, 1U);
+	// serial.writeBytes(&wlb, 1U);
+
+	// //send losses
+	// serial.writeBytes(&lub, 1U);
+	// serial.writeBytes(&llb, 1U);
+
+	// //send game state
+	// serial.writeBytes(&gs, 1U);
+
+	//send non-word game data
+	serial.writeBytes(gameData, 5U);
+
+	//clear an close connection
+	serial.flushReceiver();
+	serial.closeDevice();
 }
+
+//=============================================================================================
 
 int update(char x)
 {
@@ -348,6 +459,8 @@ int update(char x)
 	return 0;
 }
 
+//=============================================================================================
+
 //helper function that returns true if the character x
 //is in the string y
 bool isIn(char x, string y)
@@ -359,4 +472,30 @@ bool isIn(char x, string y)
 	}
 
 	return false;
+}
+
+//=============================================================================================
+
+char getChar(serialib serial)
+{
+	serial.openDevice("\\\\.\\COM6", 9600, SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1);
+	char buffer;
+	int errorNum = 0;
+
+	for(;;)
+	{
+		//TODO: what to do with timeout
+		errorNum = serial.readChar(&buffer, 1000);
+		//printf("%d", errorNum);
+
+		if (isIn(buffer,alphaBet))
+		{
+			printf("%c\n", buffer);
+			break;
+		}
+	}
+
+	serial.flushReceiver();
+	serial.closeDevice();
+	return buffer;
 }
